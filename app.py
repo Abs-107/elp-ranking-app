@@ -26,22 +26,12 @@ projects = [
     ("ELP26-222", "The project explores diversification opportunities for a retail electronics giant. Focus areas include emerging categories and business model innovation.")
 ]
 
-# Format for display: split into code and description columns with styling
-styled_projects = [
-    f"""
-    <div style='display: flex; background-color: #d0f0e0; padding: 10px; margin: 5px; border-radius: 6px;'>
-        <div style='flex: 1; font-weight: bold; color: #0b4d3a;'>{code}</div>
-        <div style='flex: 4; color: #0a3c2d;'>{desc}</div>
-    </div>
-    """ for code, desc in projects
-]
+# Create simple string list for dragging
+drag_items = [f"{code}: {desc}" for code, desc in projects]
+sorted_strings = sort_items(drag_items, direction="vertical")
 
-# Use HTML to render styled list
-sorted_html = sort_items(styled_projects, direction="vertical")
-
-# Convert back to original text for submission
-reverse_map = {v: k for v, k in zip(styled_projects, projects)}
-sorted_projects = [reverse_map[item] for item in sorted_html]
+# Convert back to tuples
+sorted_projects = [item.split(": ", 1) for item in sorted_strings]
 
 if st.button("Submit Rankings"):
     if len(sorted_projects) != 16:
@@ -51,3 +41,16 @@ if st.button("Submit Rankings"):
         df["Rank"] = range(1, len(df) + 1)
         df.to_csv("submission.csv", index=False, mode='a', header=False)
         st.success("✅ Rankings submitted successfully! Thank you.")
+
+        # Display styled ranked list
+        st.markdown("### Your Ranked Projects:")
+        for code, desc in sorted_projects:
+            st.markdown(
+                f"""
+                <div style='display: flex; background-color: #d0f0e0; padding: 10px; margin: 5px; border-radius: 6px;'>
+                    <div style='flex: 1; font-weight: bold; color: #0b4d3a;'>{code}</div>
+                    <div style='flex: 4; color: #0a3c2d;'>{desc}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
