@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-import random
+from streamlit_sortables import sort_items
 
 st.set_page_config(page_title="Team Project Ranking", layout="wide")
-st.title("🗳️ Rank Your Preferred Projects")
-st.write("Rank the 16 shortlisted projects from 1 (most preferred) to 16 (least preferred). Rankings are anonymous.")
+st.title("🗳️ Drag and Drop to Rank Projects")
+st.write("Reorder the projects below by dragging them. Place your most preferred project at the top.")
 
 # Final 16 project summaries for voting
 project_summaries = [
@@ -26,30 +26,14 @@ project_summaries = [
     "ELP26-222: The project explores diversification opportunities for a retail electronics giant. Focus areas include emerging categories and business model innovation."
 ]
 
-# Shuffle projects for each user session
-random.shuffle(project_summaries)
-
-ranking = {}
-used_ranks = set()
-st.write("### Select unique ranks for each project:")
-
-cols = st.columns(2)
-for idx, summary in enumerate(project_summaries):
-    with cols[idx % 2]:
-        rank = st.selectbox(f"{summary}", ["--"] + list(range(1, 17)), key=summary)
-        if rank != "--":
-            if rank in used_ranks:
-                st.error(f"Rank {rank} already used. Please choose a unique value.")
-            else:
-                ranking[summary] = rank
-                used_ranks.add(rank)
+# Display drag-and-drop widget
+sorted_projects = sort_items(project_summaries, direction="vertical")
 
 if st.button("Submit Rankings"):
-    if len(ranking) != 16:
-        st.warning("Please rank all 16 projects uniquely before submitting.")
+    if len(sorted_projects) != 16:
+        st.warning("Please rank all 16 projects before submitting.")
     else:
-        df = pd.DataFrame(list(ranking.items()), columns=["Project Summary", "Rank"])
-        df["Rank"] = df["Rank"].astype(int)
-        df = df.sort_values("Rank")
+        df = pd.DataFrame(sorted_projects, columns=["Project Summary"])
+        df["Rank"] = range(1, len(df) + 1)
         df.to_csv("submission.csv", index=False, mode='a', header=False)
         st.success("✅ Rankings submitted successfully! Thank you.")
